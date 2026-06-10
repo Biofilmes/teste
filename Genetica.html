@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora - Primeira Lei de Mendel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0fdf4;
+        }
+        .punnett-cell {
+            transition: all 0.3s ease;
+        }
+        .punnett-cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .dominant-text { color: #15803d; font-weight: bold; }
+        .recessive-text { color: #b91c1c; font-weight: bold; }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-green-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-3xl font-bold mb-2"><i class="fas fa-dna mr-2"></i> Genética: Primeira Lei de Mendel</h1>
+        <p class="text-green-100 max-w-2xl mx-auto">A Lei da Segregação dos Fatores postula que cada característica é determinada por dois fatores (alelos) que se separam na formação dos gametas.</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-5xl">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Painel de Configuração -->
+            <div class="lg:col-span-4 bg-white rounded-xl shadow-lg p-6 border border-green-100 h-fit">
+                <h2 class="text-xl font-bold text-green-700 mb-6 border-b pb-2"><i class="fas fa-cogs mr-2"></i> Configurar Cruzamento</h2>
+                
+                <div class="space-y-5">
+                    <!-- Genitores -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Genótipo do Indivíduo 1 (Pai/Mãe)</label>
+                        <select id="p1-genotype" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-gray-50 p-2.5 border">
+                            <option value="AA">Homozigoto Dominante (AA)</option>
+                            <option value="Aa" selected>Heterozigoto (Aa)</option>
+                            <option value="aa">Homozigoto Recessivo (aa)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Genótipo do Indivíduo 2 (Pai/Mãe)</label>
+                        <select id="p2-genotype" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-gray-50 p-2.5 border">
+                            <option value="AA">Homozigoto Dominante (AA)</option>
+                            <option value="Aa" selected>Heterozigoto (Aa)</option>
+                            <option value="aa">Homozigoto Recessivo (aa)</option>
+                        </select>
+                    </div>
+
+                    <!-- Características -->
+                    <div class="pt-4 border-t border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fenótipo Dominante (A_)</label>
+                        <input type="text" id="dom-trait" placeholder="Ex: Semente Amarela" value="Semente Amarela" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-gray-50 p-2.5 border">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fenótipo Recessivo (aa)</label>
+                        <input type="text" id="rec-trait" placeholder="Ex: Semente Verde" value="Semente Verde" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-gray-50 p-2.5 border">
+                    </div>
+
+                    <button onclick="calculatePunnett()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 mt-4 shadow-md flex justify-center items-center">
+                        <i class="fas fa-calculator mr-2"></i> Calcular Cruzamento
+                    </button>
+                </div>
+            </div>
+
+            <!-- Painel de Resultados -->
+            <div id="results-panel" class="lg:col-span-8 space-y-6 hidden">
+                
+                <!-- Quadro de Punnett -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-green-100">
+                    <h2 class="text-xl font-bold text-green-700 mb-6 text-center border-b pb-2"><i class="fas fa-table mr-2"></i> Quadro de Punnett</h2>
+                    
+                    <div class="flex justify-center mb-4">
+                        <div class="grid grid-cols-3 gap-2 text-center" style="width: 300px; height: 300px;">
+                            <!-- Top Left Empty -->
+                            <div class="flex items-center justify-center bg-gray-100 rounded-tl-lg font-bold text-gray-500">
+                                ♀ \ ♂
+                            </div>
+                            <!-- P1 Allele 1 -->
+                            <div id="col-h-1" class="flex items-center justify-center bg-green-100 font-bold text-xl rounded-t-lg text-green-800 border-b-2 border-green-300"></div>
+                            <!-- P1 Allele 2 -->
+                            <div id="col-h-2" class="flex items-center justify-center bg-green-100 font-bold text-xl rounded-tr-lg text-green-800 border-b-2 border-green-300"></div>
+                            
+                            <!-- P2 Allele 1 -->
+                            <div id="row-h-1" class="flex items-center justify-center bg-blue-100 font-bold text-xl rounded-l-lg text-blue-800 border-r-2 border-blue-300"></div>
+                            <!-- Cell 1 -->
+                            <div id="cell-1" class="punnett-cell flex flex-col items-center justify-center bg-gray-50 border-2 border-gray-200 rounded-md text-2xl font-bold"></div>
+                            <!-- Cell 2 -->
+                            <div id="cell-2" class="punnett-cell flex flex-col items-center justify-center bg-gray-50 border-2 border-gray-200 rounded-md text-2xl font-bold"></div>
+                            
+                            <!-- P2 Allele 2 -->
+                            <div id="row-h-2" class="flex items-center justify-center bg-blue-100 font-bold text-xl rounded-bl-lg text-blue-800 border-r-2 border-blue-300"></div>
+                            <!-- Cell 3 -->
+                            <div id="cell-3" class="punnett-cell flex flex-col items-center justify-center bg-gray-50 border-2 border-gray-200 rounded-md text-2xl font-bold"></div>
+                            <!-- Cell 4 -->
+                            <div id="cell-4" class="punnett-cell flex flex-col items-center justify-center bg-gray-50 border-2 border-gray-200 rounded-md text-2xl font-bold"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proporções -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Proporção Genotípica -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-green-100">
+                        <h3 class="text-lg font-bold text-purple-700 mb-4 border-b pb-2"><i class="fas fa-dna mr-2"></i> Proporção Genotípica</h3>
+                        <ul id="genotype-results" class="space-y-3">
+                            <!-- Injetado via JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Proporção Fenotípica -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 border border-green-100">
+                        <h3 class="text-lg font-bold text-orange-600 mb-4 border-b pb-2"><i class="fas fa-leaf mr-2"></i> Proporção Fenotípica</h3>
+                        <ul id="phenotype-results" class="space-y-3">
+                            <!-- Injetado via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placeholder Initial State -->
+            <div id="initial-state" class="lg:col-span-8 flex flex-col items-center justify-center text-center p-12 bg-white rounded-xl shadow-lg border border-gray-100">
+                <img src="https://api.iconify.design/noto:dna.svg" alt="DNA" class="w-32 h-32 mb-6 opacity-80 hover:opacity-100 transition-opacity">
+                <h2 class="text-2xl font-bold text-gray-700 mb-2">Pronto para calcular!</h2>
+                <p class="text-gray-500">Selecione os genótipos ao lado e clique em "Calcular Cruzamento" para gerar o Quadro de Punnett e as proporções dos descendentes.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-6 text-center mt-auto">
+        <p>© 2026 Simulador de Genética - Primeira Lei de Mendel</p>
+    </footer>
+
+    <script>
+        // Formatar para sempre colocar a letra maiúscula primeiro (ex: aA -> Aa)
+        function formatGenotype(allele1, allele2) {
+            if (allele1 === 'a' && allele2 === 'A') {
+                return 'Aa';
+            }
+            return allele1 + allele2;
+        }
+
+        function calculatePunnett() {
+            // Obter os valores selecionados
+            const p1 = document.getElementById('p1-genotype').value;
+            const p2 = document.getElementById('p2-genotype').value;
+            const domTrait = document.getElementById('dom-trait').value || "Característica Dominante";
+            const recTrait = document.getElementById('rec-trait').value || "Característica Recessiva";
+
+            // Separar os alelos
+            const p1Alleles = [p1[0], p1[1]];
+            const p2Alleles = [p2[0], p2[1]];
+
+            // Preencher os cabeçalhos do Quadro de Punnett
+            document.getElementById('col-h-1').innerText = p1Alleles[0];
+            document.getElementById('col-h-2').innerText = p1Alleles[1];
+            document.getElementById('row-h-1').innerText = p2Alleles[0];
+            document.getElementById('row-h-2').innerText = p2Alleles[1];
+
+            // Calcular os cruzamentos
+            const offspring = [
+                formatGenotype(p2Alleles[0], p1Alleles[0]),
+                formatGenotype(p2Alleles[0], p1Alleles[1]),
+                formatGenotype(p2Alleles[1], p1Alleles[0]),
+                formatGenotype(p2Alleles[1], p1Alleles[1])
+            ];
+
+            // Atualizar as células visuais do Quadro
+            for (let i = 0; i < 4; i++) {
+                const cell = document.getElementById(`cell-${i+1}`);
+                const geno = offspring[i];
+                cell.innerText = geno;
+                
+                // Aplicar cores dependendo do genótipo
+                if (geno === 'AA') {
+                    cell.className = 'punnett-cell flex flex-col items-center justify-center bg-green-50 border-2 border-green-200 rounded-md text-3xl font-bold dominant-text';
+                } else if (geno === 'Aa') {
+                    cell.className = 'punnett-cell flex flex-col items-center justify-center bg-yellow-50 border-2 border-yellow-200 rounded-md text-3xl font-bold text-yellow-700';
+                } else {
+                    cell.className = 'punnett-cell flex flex-col items-center justify-center bg-red-50 border-2 border-red-200 rounded-md text-3xl font-bold recessive-text';
+                }
+            }
+
+            // Calcular proporções Genotípicas
+            const genoCounts = { 'AA': 0, 'Aa': 0, 'aa': 0 };
+            offspring.forEach(g => genoCounts[g]++);
+
+            const genoHtml = [];
+            if (genoCounts['AA'] > 0) {
+                const pct = (genoCounts['AA'] / 4) * 100;
+                genoHtml.push(`
+                    <li class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
+                        <span class="font-bold text-green-800">AA (Homozigoto Dominante)</span>
+                        <span class="px-3 py-1 bg-green-200 text-green-800 rounded-full font-bold">${pct}% (${genoCounts['AA']}/4)</span>
+                    </li>`);
+            }
+            if (genoCounts['Aa'] > 0) {
+                const pct = (genoCounts['Aa'] / 4) * 100;
+                genoHtml.push(`
+                    <li class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                        <span class="font-bold text-yellow-800">Aa (Heterozigoto)</span>
+                        <span class="px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full font-bold">${pct}% (${genoCounts['Aa']}/4)</span>
+                    </li>`);
+            }
+            if (genoCounts['aa'] > 0) {
+                const pct = (genoCounts['aa'] / 4) * 100;
+                genoHtml.push(`
+                    <li class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                        <span class="font-bold text-red-800">aa (Homozigoto Recessivo)</span>
+                        <span class="px-3 py-1 bg-red-200 text-red-800 rounded-full font-bold">${pct}% (${genoCounts['aa']}/4)</span>
+                    </li>`);
+            }
+            document.getElementById('genotype-results').innerHTML = genoHtml.join('');
+
+            // Calcular proporções Fenotípicas
+            const domCount = genoCounts['AA'] + genoCounts['Aa'];
+            const recCount = genoCounts['aa'];
+            
+            const phenoHtml = [];
+            if (domCount > 0) {
+                const pct = (domCount / 4) * 100;
+                phenoHtml.push(`
+                    <li class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
+                        <span class="font-bold text-green-800">${domTrait} (Dominante)</span>
+                        <span class="px-3 py-1 bg-green-200 text-green-800 rounded-full font-bold">${pct}% (${domCount}/4)</span>
+                    </li>`);
+            }
+            if (recCount > 0) {
+                const pct = (recCount / 4) * 100;
+                phenoHtml.push(`
+                    <li class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                        <span class="font-bold text-red-800">${recTrait} (Recessivo)</span>
+                        <span class="px-3 py-1 bg-red-200 text-red-800 rounded-full font-bold">${pct}% (${recCount}/4)</span>
+                    </li>`);
+            }
+            document.getElementById('phenotype-results').innerHTML = phenoHtml.join('');
+
+            // Alternar a visualização dos painéis
+            document.getElementById('initial-state').classList.add('hidden');
+            document.getElementById('results-panel').classList.remove('hidden');
+            
+            // Pequeno efeito de rolagem suave para o resultado no mobile
+            if(window.innerWidth < 1024) {
+                 document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Calcular automaticamente com os valores padrão ao carregar, opcional
+        // window.onload = calculatePunnett;
+    </script>
+</body>
+</html>
